@@ -24,8 +24,8 @@ def legislators_by_zipcode(zipcode)
 end
 
 def clean_phone_number(phone)
-  phone..gsub!(/\D/, '')
-  
+  phone_number = phone.gsub(/\D/, '')
+
   if phone_number.length==10
     phone_number
   elsif phone_number.length == 11 && phone_number[0] == "1"
@@ -33,6 +33,11 @@ def clean_phone_number(phone)
   else
     "Wrong Number!!"
   end
+end
+
+def get_reg_date(regdate)
+  date = regdate.split(' ')[0]
+  time = Date.strptime(date, "%m/%d/%y")
 end
 
 def save_thank_you_leter(id, form_letter)
@@ -45,30 +50,41 @@ def save_thank_you_leter(id, form_letter)
   end
 end
 
+
+
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
 
 puts 'EventManager initialized.'
 
 contents = CSV.open(
-  'event_attendees.csv',
+  'event_attendees_full.csv',
   headers: true,
   header_converters: :symbol
 )
+
+reg_dates = []
 
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
 
-  zipcode = clean_zipcode(row[:zipcode])
+  # zipcode = clean_zipcode(row[:zipcode])
 
-  legislators = legislators_by_zipcode(zipcode)
+  # legislators = legislators_by_zipcode(zipcode)
 
-  form_letter = erb_template.result(binding)
+  # form_letter = erb_template.result(binding)
 
-  phone_numbers = clean_phone_number(row[:homephone])
+  # phone_numbers = clean_phone_number(row[:homephone])
 
-  save_thank_you_leter(id, form_letter)
+  # save_thank_you_leter(id, form_letter)
 
-  puts phone_numbers
+  reg_dates << get_reg_date(row[:regdate])
 end
+
+z = reg_dates.reduce(Hash.new(0)) do |result, date_obj|
+  result[date_obj.to_s] += 1
+  result
+end
+
+puts z.sort_by {|_key, value| value}
