@@ -35,6 +35,10 @@ def clean_phone_number(phone)
   end
 end
 
+def get_reg_time(regtime)
+  time = regtime.split(' ')[1]
+end
+
 def get_reg_date(regdate)
   date = regdate.split(' ')[0]
   time = Date.strptime(date, "%m/%d/%y")
@@ -63,6 +67,7 @@ contents = CSV.open(
   header_converters: :symbol
 )
 
+reg_times = []
 reg_dates = []
 
 contents.each do |row|
@@ -79,12 +84,19 @@ contents.each do |row|
 
   # save_thank_you_leter(id, form_letter)
 
+  reg_times << get_reg_time(row[:regdate])
   reg_dates << get_reg_date(row[:regdate])
 end
 
-z = reg_dates.reduce(Hash.new(0)) do |result, date_obj|
-  result[date_obj.to_s] += 1
+y = reg_times.reduce(Hash.new(0)) do |result, time|
+  result[time] += 1
   result
 end
 
+z = reg_dates.reduce(Hash.new(0)) do |result, date|
+  result[Date::DAYNAMES[date.wday]] += 1
+  result
+end
+
+puts y.sort_by {|_key, value| value}
 puts z.sort_by {|_key, value| value}
